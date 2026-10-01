@@ -12,25 +12,28 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        nodejs: [12, 14, 16, 18]
+        nodejs: [18, 20, 22]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.version }}
+          node-version: ${{ matrix.nodejs }}
+          cache: pnpm
+      
+      - run: pnpm install --frozen-lockfile
       
       - run: scripts/setup-firebase-emulator-for-tests.sh
       
-      - run: npm ci
+      - run: pnpm run build
       
-      - run: npm run build
+      - run: pnpm run testall-with-coverage-lcov
       
-      - run: npm run testall-with-coverage-lcov
-      
-      - run: npm run upload-coverage
+      - run: pnpm run upload-coverage
       
   release:
     name: Release
@@ -43,15 +46,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
         with:
-          node-version: 16
+          node-version: 20
+          cache: pnpm
             
-      - run: npm ci
-      - run: npm run build      
-      - run: npx semantic-release
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
