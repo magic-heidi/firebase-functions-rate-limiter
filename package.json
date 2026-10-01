@@ -1,0 +1,84 @@
+{
+  "name": "@magic-heidi/firebase-functions-rate-limiter",
+  "type": "module",
+  "version": "0.0.1",
+  "packageManager": "pnpm@12.8.2",
+  "description": "JS/TS library that allows you to set per - time, per - user or per - anything limits for calling Firebase cloud functions",
+  "author": "Jędrzej Lewandowski <jedrzejblew@gmail.com> (https://jedrzej.lewandowski.doctor/)",
+  "contributors": [
+    "Omgovich (https://github.com/omgovich)",
+    "Fahadul Islam (https://github.com/magic-heidi)"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/magic-heidi/firebase-functions-rate-limiter"
+  },
+  "bugs": {
+    "url": "https://github.com/magic-heidi/firebase-functions-rate-limiter/issues"
+  },
+  "keywords": [
+    "firebase",
+    "firebase-functions",
+    "rate-limiter"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "files": [
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "build": "tsdown && pnpm lint",
+    "test": "vitest run -p unit",
+    "test:integration": "vitest run -p integration",
+    "test:emulator": "bash scripts/run-integration-tests-with-firebase-emulator.sh",
+    "test:all": "pnpm test && pnpm test:emulator",
+    "test:coverage": "vitest run -p unit --coverage",
+    "test:coverage:lcov": "vitest run -p unit --coverage --coverage.reporter=lcov",
+    "check": "pnpm build && pnpm test && pnpm test:emulator",
+    "semantic-release": "semantic-release"
+  },
+  "peerDependencies": {
+    "firebase-admin": "^13.0.0 || ^14.0.0",
+    "firebase-functions": "^6.0.0 || ^7.0.0"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.5.1",
+    "@firebase/testing": "^0.20.11",
+    "@types/node": "^22.13.10",
+    "@vitest/coverage-v8": "^5.0.2",
+    "es-toolkit": "^1.39.3",
+    "eslint": "^10.11.0",
+    "firebase-admin": "^14.5.0",
+    "firebase-functions": "^7.4.0",
+    "semantic-release": "^17.4.7",
+    "tsdown": "^0.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.3"
+  },
+  "release": {}
+}
