@@ -1,14 +1,14 @@
-import { TimestampProvider } from "./TimestampProvider";
+import type { TimestampProvider } from './TimestampProvider'
 
 export class TimestampProviderMock implements TimestampProvider {
-    private timestampNowSeconds: number | undefined = undefined;
+  private timestampNowSeconds: number | undefined = undefined
 
-    public getTimestampSeconds(): number {
-        if (!this.timestampNowSeconds) return Date.now() / 1000;
-        else return this.timestampNowSeconds;
-    }
+  public getTimestampSeconds(): number {
+    if (!this.timestampNowSeconds) return Date.now() / 1000
+    else return this.timestampNowSeconds
+  }
 
-    public setTimestampSeconds(timestampSeconds: number) {
-        this.timestampNowSeconds = timestampSeconds;
-    }
+  public setTimestampSeconds(timestampSeconds: number) {
+    this.timestampNowSeconds = timestampSeconds
+  }
 }

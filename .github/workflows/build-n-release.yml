@@ -1,4 +1,4 @@
-name: "Build and release"
+name: Build and release
 
 on:
   push:
@@ -24,17 +24,17 @@ jobs:
         with:
           node-version: ${{ matrix.nodejs }}
           cache: pnpm
-      
+
       - run: pnpm install --frozen-lockfile
-      
+
       - run: scripts/setup-firebase-emulator-for-tests.sh
-      
+
       - run: pnpm run build
-      
+
       - run: pnpm run testall-with-coverage-lcov
-      
+
       - run: pnpm run upload-coverage
-      
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-            
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - run: pnpm run semantic-release

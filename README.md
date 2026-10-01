@@ -32,9 +32,9 @@ $ npm install --save firebase-functions-rate-limiter
 Then:
 
 ```typescript
-import FirebaseFunctionsRateLimiter from "firebase-functions-rate-limiter";
+import FirebaseFunctionsRateLimiter from 'firebase-functions-rate-limiter'
 // or
-const { FirebaseFunctionsRateLimiter } = require("firebase-functions-rate-limiter");
+const { FirebaseFunctionsRateLimiter } = require('firebase-functions-rate-limiter')
 ```
 
 
@@ -44,28 +44,27 @@ const { FirebaseFunctionsRateLimiter } = require("firebase-functions-rate-limite
 **Example 1**: limit calls for everyone:
 
 ```javascript
-import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
-import { FirebaseFunctionsRateLimiter } from "firebase-functions-rate-limiter";
+import * as admin from 'firebase-admin'
+import * as functions from 'firebase-functions'
+import { FirebaseFunctionsRateLimiter } from 'firebase-functions-rate-limiter'
 
-admin.initializeApp(functions.config().firebase);
-const database = admin.database();
+admin.initializeApp(functions.config().firebase)
+const database = admin.database()
 
 const limiter = FirebaseFunctionsRateLimiter.withRealtimeDbBackend(
-    {
-        name: "rate_limiter_collection",
-        maxCalls: 2,
-        periodSeconds: 15,
-    },
-    database,
-);
-exports.testRateLimiter = 
-  functions.https.onRequest(async (req, res) => {
-    await limiter.rejectOnQuotaExceededOrRecordUsage(); // will throw HttpsException with proper warning
+  {
+    name: 'rate_limiter_collection',
+    maxCalls: 2,
+    periodSeconds: 15,
+  },
+  database,
+)
+exports.testRateLimiter
+  = functions.https.onRequest(async (req, res) => {
+    await limiter.rejectOnQuotaExceededOrRecordUsage() // will throw HttpsException with proper warning
 
-    res.send("Function called");
-});
-
+    res.send('Function called')
+  })
 ```
 
 >  You can use two functions: `limiter.rejectOnQuotaExceededOrRecordUsage(qualifier?)` will throw an *functions.https.HttpsException* when limit is exceeded while `limiter.isQuotaExceededOrRecordUsage(qualifier?)` gives you the ability to choose how to handle the situation.
@@ -74,42 +73,41 @@ exports.testRateLimiter =
 **Example 2**: limit calls for each user separately (function called directly - please refer [firebase docs on this topic](https://firebase.google.com/docs/functions/callable)):
 
 ```javascript
-import * as admin from "firebase-admin";
-import * as functions from "firebase-functions";
-import { FirebaseFunctionsRateLimiter } from "firebase-functions-rate-limiter";
+import * as admin from 'firebase-admin'
+import * as functions from 'firebase-functions'
+import { FirebaseFunctionsRateLimiter } from 'firebase-functions-rate-limiter'
 
-admin.initializeApp(functions.config().firebase);
-const database = admin.database();
+admin.initializeApp(functions.config().firebase)
+const database = admin.database()
 
 const perUserlimiter = FirebaseFunctionsRateLimiter.withRealtimeDbBackend(
-    {
-        name: "per_user_limiter",
-        maxCalls: 2,
-        periodSeconds: 15,
-    },
-    database,
-);
+  {
+    name: 'per_user_limiter',
+    maxCalls: 2,
+    periodSeconds: 15,
+  },
+  database,
+)
 
-exports.authenticatedFunction = 
-  functions.https.onCall(async (data, context) => {
+exports.authenticatedFunction
+  = functions.https.onCall(async (data, context) => {
     if (!context.auth || !context.auth.uid) {
-        throw new functions.https.HttpsError(
-            "failed-precondition",
-            "Please authenticate",
-        );
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Please authenticate',
+      )
     }
-    const uidQualifier = "u_" + context.auth.uid;
-    const isQuotaExceeded = await perUserlimiter.isQuotaExceededOrRecordUsage(uidQualifier);
+    const uidQualifier = `u_${context.auth.uid}`
+    const isQuotaExceeded = await perUserlimiter.isQuotaExceededOrRecordUsage(uidQualifier)
     if (isQuotaExceeded) {
-        throw new functions.https.HttpsError(
-            "failed-precondition",
-            "Call quota exceeded for this user. Try again later",
-        );
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Call quota exceeded for this user. Try again later',
+      )
     }
-  
-    return { result: "Function called" };
-});
 
+    return { result: 'Function called' }
+  })
 ```
 
 
@@ -119,21 +117,21 @@ exports.authenticatedFunction =
 **#1** Initialize admin app and get Realtime database object
 
 ```typescript
-admin.initializeApp(functions.config().firebase);
-const database = admin.database();
+admin.initializeApp(functions.config().firebase)
+const database = admin.database()
 ```
 
 **#2** Create limiter object outside of the function scope and pass the configuration and Database object. Configuration options are listed below.
 
 ```typescript
 const someLimiter = FirebaseFunctionsRateLimiter.withRealtimeDbBackend(
-    {
-        name: "limiter_some",
-        maxCalls: 10,
-        periodSeconds: 60,
-    },
-    database,
-);
+  {
+    name: 'limiter_some',
+    maxCalls: 10,
+    periodSeconds: 60,
+  },
+  database,
+)
 ```
 
 **#3** Inside the function call isQuotaExceededOrRecordUsage. This is an async function so not forget about **await**! The function will check if the limit was exceeded. If limit was not exceeded it will record this usage and return true. Otherwise, write will be only called if there are usage records that are older than the specified period and are about to being cleared.
