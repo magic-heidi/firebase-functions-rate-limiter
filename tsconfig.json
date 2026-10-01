@@ -1,29 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "baseUrl": "src/",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "paths": {
-      "*": [
-        "node_modules/*",
-        "src/types/*"
-      ]
-    },
-    "allowJs": false,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "rootDir": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["vitest/globals"],
     "strict": true,
-    "noImplicitAny": true,
     "declaration": true,
     "outDir": "dist",
-    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "src/**/_test",
-    "src/**/*.test.ts"
+    "node_modules"
   ]
 }
