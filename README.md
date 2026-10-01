@@ -6,6 +6,16 @@
 
 Rate-limit Firebase Cloud Functions by user, resource, or any other qualifier. Usage records are stored in Realtime Database or Firestore and updated atomically.
 
+## Requirements and compatibility
+
+| Component | Supported versions | Notes |
+| --- | --- | --- |
+| Node.js | 22 or newer | Required runtime. |
+| `firebase-admin` | 13 or 14 | Uses modular Firebase Admin SDK entry points. |
+| `firebase-functions` | 6 or 7 | Works with both first-generation and second-generation functions. |
+
+The function generation is selected by your imports and deployment configuration.
+
 ## Quick start
 
 Install the package and Firebase SDKs if they are not already present in your Functions project:
