@@ -1,7 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
 import type { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
-import { _, expect, sinon } from './_test/test_environment'
+import { random } from 'es-toolkit'
 import { GenericRateLimiter } from './GenericRateLimiter'
 import { PersistenceProviderMock } from './persistence/PersistenceProviderMock'
 import { TimestampProviderMock } from './timestamp/TimestampProviderMock.test'
@@ -30,11 +30,11 @@ describe('GenericRateLimiter', () => {
   describe('#isQuotaAlreadyExceededDoNotRecordCall', () => {
     it('Calls get on PersistenceProvider', async () => {
       const { genericRateLimiter, persistenceProviderMock } = mock({})
-      persistenceProviderMock.get = sinon.spy(persistenceProviderMock.get)
+      const getSpy = vi.spyOn(persistenceProviderMock, 'get')
 
       await genericRateLimiter.isQuotaAlreadyExceededDoNotRecordCall(sampleQualifier)
 
-      expect((persistenceProviderMock.get as sinon.SinonSpy).callCount, 'get call count').to.be.equal(1)
+      expect(getSpy).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -42,7 +42,7 @@ describe('GenericRateLimiter', () => {
     it('Quota is not exceeded on first call when maxCalls=1', async () => {
       const { genericRateLimiter } = mock({ maxCalls: 1 })
 
-      expect(await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)).to.be.equal(false)
+      expect(await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)).toBe(false)
     })
 
     it('Does not fail on empty collection', async () => {
@@ -53,25 +53,22 @@ describe('GenericRateLimiter', () => {
 
     it('Calls updateAndGet on PersistenceProvider', async () => {
       const { genericRateLimiter, persistenceProviderMock } = mock({})
-      persistenceProviderMock.updateAndGet = sinon.spy(persistenceProviderMock.updateAndGet)
+      const updateAndGetSpy = vi.spyOn(persistenceProviderMock, 'updateAndGet')
 
       await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)
 
-      expect(
-        (persistenceProviderMock.updateAndGet as sinon.SinonSpy).callCount,
-        'updateAndGet call count',
-      ).to.be.equal(1)
+      expect(updateAndGetSpy).toHaveBeenCalledTimes(1)
     })
 
     it('Puts new current timestamp when quota was not exceeded', async () => {
       const { genericRateLimiter, persistenceProviderMock, timestampProviderMock } = mock({})
 
-      const sampleTimestamp = _.random(10, 5000)
+      const sampleTimestamp = random(10, 5000)
       timestampProviderMock.setTimestampSeconds(sampleTimestamp)
 
       await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)
 
-      expect(_.values(persistenceProviderMock.persistenceObject)[0].u).to.contain(sampleTimestamp)
+      expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).toContain(sampleTimestamp)
     })
 
     it('does not put current timestamp when quota was exceeded', async () => {
@@ -80,28 +77,23 @@ describe('GenericRateLimiter', () => {
         periodSeconds: 20,
       })
 
-      const sampleTimestamp = _.random(10, 5000)
+      const sampleTimestamp = random(10, 5000)
       timestampProviderMock.setTimestampSeconds(sampleTimestamp)
       const quotaExceeded1 = await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)
-      expect(quotaExceeded1).to.be.equal(false)
+      expect(quotaExceeded1).toBe(false)
 
       timestampProviderMock.setTimestampSeconds(sampleTimestamp + 1)
       const quotaExceeded2 = await genericRateLimiter.isQuotaExceededOrRecordCall(sampleQualifier)
-      expect(quotaExceeded2).to.be.equal(true)
+      expect(quotaExceeded2).toBe(true)
 
-      expect(_.values(persistenceProviderMock.persistenceObject)[0].u)
-        .to
-        .be
-        .an('array')
-        .with
-        .length(1)
+      expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).toHaveLength(1)
     })
 
     describe('threshold tests', () => {
       const savedTimestamps: number[] = []
       const persistenceProviderMock: PersistenceProviderMock = new PersistenceProviderMock()
 
-      before(async () => {
+      beforeAll(async () => {
         const timestampProviderMock = new TimestampProviderMock()
         const periodSeconds = 5
         const maxCalls = 10
@@ -111,7 +103,7 @@ describe('GenericRateLimiter', () => {
           timestampProviderMock,
         )
 
-        let timestamp = _.random(10, 5000)
+        let timestamp = random(10, 5000)
 
         for (let i = 0; i < 6; i++) {
           timestampProviderMock.setTimestampSeconds(timestamp)
@@ -122,39 +114,15 @@ describe('GenericRateLimiter', () => {
       })
 
       it('saved record does not contain timestamps below threshold', () => {
-        expect(_.values(persistenceProviderMock.persistenceObject)[0].u)
-          .to
-          .be
-          .an('array')
-          .with
-          .length(3)
-          .that
-          .contains(savedTimestamps[savedTimestamps.length - 1])
-          .and
-          .contains(savedTimestamps[savedTimestamps.length - 2])
-          .and
-          .contains(savedTimestamps[savedTimestamps.length - 3])
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).toHaveLength(3)
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).toEqual(expect.arrayContaining(savedTimestamps.slice(-3)))
       })
 
       it('saved record contains all timestamps above or equal threshold', () => {
-        expect(_.values(persistenceProviderMock.persistenceObject)[0].u)
-          .to
-          .be
-          .an('array')
-          .with
-          .length(3)
-          .that
-          .does
-          .not
-          .contain(savedTimestamps[0])
-          .and
-          .does
-          .not
-          .contains(savedTimestamps[1])
-          .and
-          .does
-          .not
-          .contains(savedTimestamps[2])
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).toHaveLength(3)
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).not.toContain(savedTimestamps[0])
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).not.toContain(savedTimestamps[1])
+        expect(Object.values(persistenceProviderMock.persistenceObject)[0].u).not.toContain(savedTimestamps[2])
       })
     })
 
@@ -166,7 +134,7 @@ describe('GenericRateLimiter', () => {
         periodSeconds,
       })
 
-      let timestamp = _.random(10, 5000)
+      let timestamp = random(10, 5000)
 
       for (let i = 0; i < 5; i++) {
         timestampProviderMock.setTimestampSeconds(timestamp)
@@ -175,7 +143,7 @@ describe('GenericRateLimiter', () => {
       }
 
       timestampProviderMock.setTimestampSeconds(timestamp)
-      expect(await genericRateLimiter.isQuotaExceededOrRecordCall('another_qualifier')).to.be.equal(false)
+      expect(await genericRateLimiter.isQuotaExceededOrRecordCall('another_qualifier')).toBe(false)
     })
   })
 
@@ -203,7 +171,7 @@ describe('GenericRateLimiter', () => {
             periodSeconds,
           })
 
-          let timestamp = _.random(10, 5000)
+          let timestamp = random(10, 5000)
 
           for (let i = 0; i < 6; i++) {
             timestampProviderMock.setTimestampSeconds(timestamp)
@@ -211,7 +179,7 @@ describe('GenericRateLimiter', () => {
             timestamp += 1
           }
           const method = testedMethod.methodFactory(genericRateLimiter)
-          expect(await method(sampleQualifier)).to.be.equal(true)
+          expect(await method(sampleQualifier)).toBe(true)
         })
 
         it('returns false if there are exactly maxCalls calls in the period', async () => {
@@ -222,7 +190,7 @@ describe('GenericRateLimiter', () => {
             periodSeconds,
           })
 
-          let timestamp = _.random(10, 5000)
+          let timestamp = random(10, 5000)
 
           for (let i = 0; i < 2; i++) {
             timestampProviderMock.setTimestampSeconds(timestamp)
@@ -231,7 +199,7 @@ describe('GenericRateLimiter', () => {
           }
           // the following call is the third, should be passed
           const method = testedMethod.methodFactory(genericRateLimiter)
-          expect(await method(sampleQualifier)).to.be.equal(false)
+          expect(await method(sampleQualifier)).toBe(false)
         })
 
         it('returns false if there are no calls, maxCalls=1 ant this is the first call', async () => {
@@ -242,10 +210,10 @@ describe('GenericRateLimiter', () => {
             periodSeconds,
           })
 
-          const timestamp = _.random(10, 5000)
+          const timestamp = random(10, 5000)
           timestampProviderMock.setTimestampSeconds(timestamp)
           const method = testedMethod.methodFactory(genericRateLimiter)
-          expect(await method(sampleQualifier)).to.be.equal(false)
+          expect(await method(sampleQualifier)).toBe(false)
         })
 
         it('returns false if there are less calls than maxCalls', async () => {
@@ -256,7 +224,7 @@ describe('GenericRateLimiter', () => {
             periodSeconds,
           })
 
-          let timestamp = _.random(10, 5000)
+          let timestamp = random(10, 5000)
 
           for (let i = 0; i < 2; i++) {
             timestampProviderMock.setTimestampSeconds(timestamp)
@@ -265,7 +233,7 @@ describe('GenericRateLimiter', () => {
           }
           // the following call is the third, should be passed
           const method = testedMethod.methodFactory(genericRateLimiter)
-          expect(await method(sampleQualifier)).to.be.equal(false)
+          expect(await method(sampleQualifier)).toBe(false)
         })
 
         it('returns false if exceeding calls are out of the period', async () => {
@@ -276,7 +244,7 @@ describe('GenericRateLimiter', () => {
             periodSeconds,
           })
 
-          let timestamp = _.random(10, 5000)
+          let timestamp = random(10, 5000)
 
           for (let i = 0; i < 10; i++) {
             timestampProviderMock.setTimestampSeconds(timestamp)
@@ -288,7 +256,7 @@ describe('GenericRateLimiter', () => {
           timestampProviderMock.setTimestampSeconds(timestamp)
 
           const method = testedMethod.methodFactory(genericRateLimiter)
-          expect(await method(sampleQualifier)).to.be.equal(false)
+          expect(await method(sampleQualifier)).toBe(false)
         })
       }),
     )

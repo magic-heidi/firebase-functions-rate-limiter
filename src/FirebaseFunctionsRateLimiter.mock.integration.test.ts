@@ -1,19 +1,18 @@
 import type { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
+import { randomUUID } from 'node:crypto'
 /* tslint:disable:max-classes-per-file no-console */
 import * as firebase from '@firebase/testing'
-import { v4 as uuid } from 'uuid'
 
 import { FirebaseFunctionsRateLimiter } from './FirebaseFunctionsRateLimiter'
 import { PersistenceProviderMock } from './persistence/PersistenceProviderMock'
-import 'mocha'
 
 export function mock(
   backend: 'firestore' | 'realtimedb' | 'mock',
   configApply: FirebaseFunctionsRateLimiterConfiguration,
 ) {
   const app = firebase.initializeTestApp({ projectId: `unit-testing-${Date.now()}`, databaseName: 'db' })
-  const uniqueCollectionName = uuid()
-  const uniqueDocName = uuid()
+  const uniqueCollectionName = randomUUID()
+  const uniqueDocName = randomUUID()
   const firestore = app.firestore()
   const database = app.database()
   const persistenceProviderMock = new PersistenceProviderMock()

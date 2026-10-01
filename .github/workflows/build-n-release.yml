@@ -29,11 +29,11 @@ jobs:
 
       - run: scripts/setup-firebase-emulator-for-tests.sh
 
-      - run: pnpm run build
+      - run: pnpm build
 
-      - run: pnpm run testall-with-coverage-lcov
+      - run: pnpm test:coverage:lcov
 
-      - run: pnpm run upload-coverage
+      - run: pnpm upload-coverage
 
   release:
     name: Release
@@ -56,8 +56,8 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-      - run: pnpm run semantic-release
+      - run: pnpm build
+      - run: pnpm semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

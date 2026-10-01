@@ -2,20 +2,18 @@ import type { PersistenceProvider } from './PersistenceProvider'
 
 import type { PersistenceRecord } from './PersistenceRecord'
 
+import { randomUUID } from 'node:crypto'
 /* tslint:disable:max-classes-per-file */
 import * as firebase from '@firebase/testing'
-import { expect, sinon, uuid } from '../_test/test_environment'
 import { FirestorePersistenceProvider } from './FirestorePersistenceProvider'
 import { PersistenceProviderMock } from './PersistenceProviderMock'
 import { RealtimeDbPersistenceProvider } from './RealtimeDbPersistenceProvider'
 
-describe('PersistenceProviders', function () {
-  this.timeout(4000)
-
+describe('PersistenceProviders', () => {
   function mock() {
     const app = firebase.initializeTestApp({ projectId: `unit-testing-${Date.now()}`, databaseName: 'db' })
-    const uniqueCollectionName = uuid()
-    const uniqueDocName = uuid()
+    const uniqueCollectionName = randomUUID()
+    const uniqueDocName = randomUUID()
     const firestore = app.firestore()
     const database = app.database()
     const provider: PersistenceProvider = undefined as any
@@ -51,18 +49,17 @@ describe('PersistenceProviders', function () {
     return { ...mockResult, provider }
   }
 
-  afterEach(async () => {
-    await Promise.all(firebase.apps().map(app => app.delete()))
-  })
-
-  before('startup', async function () {
-    this.timeout(4000)
+  beforeAll(async () => {
     const { firestore, database } = mock()
     await firestore
       .collection('a')
       .doc('a')
       .get()
     await database.ref('a').set({ a: 'a' })
+  })
+
+  afterEach(async () => {
+    await Promise.all(firebase.apps().map(app => app.delete()))
   });
 
   [
@@ -79,33 +76,28 @@ describe('PersistenceProviders', function () {
             uniqueDocName,
             emptyPersistenceRecord,
           } = test.mockFactory()
-          const spy = sinon.spy()
+          const spy = vi.fn()
           await provider.updateAndGet(uniqueCollectionName, uniqueDocName, (record) => {
             spy()
             return emptyPersistenceRecord
           })
-          expect(spy.callCount).to.be.equal(1)
+          expect(spy).toHaveBeenCalledTimes(1)
         })
 
         it('Resolves when transaction callback is finshed', async () => {
           const { provider, uniqueCollectionName, uniqueDocName } = test.mockFactory()
-          const spy = sinon.spy()
+          const spy = vi.fn()
           await provider.updateAndGet(uniqueCollectionName, uniqueDocName, (record) => {
             spy()
             return { u: [] }
           })
-          expect(spy.callCount).to.be.equal(1)
+          expect(spy).toHaveBeenCalledTimes(1)
         })
 
         it('Returns empty record when no data', async () => {
           const { provider, uniqueCollectionName, uniqueDocName, nonModifyingUpdater } = test.mockFactory()
           const rec = await provider.updateAndGet(uniqueCollectionName, uniqueDocName, nonModifyingUpdater)
-          expect(rec.u)
-            .to
-            .be
-            .an('array')
-            .with
-            .length(0)
+          expect(rec.u).toHaveLength(0)
         })
 
         it('Saves record properly', async () => {
@@ -121,15 +113,7 @@ describe('PersistenceProviders', function () {
             uniqueDocName,
             nonModifyingUpdater,
           )
-          expect(recRetrived.u)
-            .to
-            .be
-            .an('array')
-            .with
-            .length(recToBeSaved.u.length)
-            .that
-            .have
-            .members(recToBeSaved.u)
+          expect(recRetrived.u).toEqual(recToBeSaved.u)
         })
       })
 
@@ -137,12 +121,7 @@ describe('PersistenceProviders', function () {
         it('Returns empty record when no data', async () => {
           const { provider, uniqueCollectionName, uniqueDocName } = test.mockFactory()
           const rec = await provider.get(uniqueCollectionName, uniqueDocName)
-          expect(rec.u)
-            .to
-            .be
-            .an('array')
-            .with
-            .length(0)
+          expect(rec.u).toHaveLength(0)
         })
 
         it('Returns previously saved record', async () => {
@@ -154,15 +133,7 @@ describe('PersistenceProviders', function () {
           await provider.updateAndGet(uniqueCollectionName, uniqueDocName, r => recToBeSaved)
 
           const recRetrived = await provider.get(uniqueCollectionName, uniqueDocName)
-          expect(recRetrived.u)
-            .to
-            .be
-            .an('array')
-            .with
-            .length(recToBeSaved.u.length)
-            .that
-            .have
-            .members(recToBeSaved.u)
+          expect(recRetrived.u).toEqual(recToBeSaved.u)
         })
       })
     }),

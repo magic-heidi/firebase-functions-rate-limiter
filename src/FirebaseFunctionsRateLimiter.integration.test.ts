@@ -2,17 +2,16 @@ import type { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFuncti
 import type { PersistenceRecord } from './persistence/PersistenceRecord'
 
 /* tslint:disable:max-classes-per-file no-console */
+import { randomUUID } from 'node:crypto'
 import * as firebase from '@firebase/testing'
 import * as functions from 'firebase-functions'
-import { _, expect, uuid } from './_test/test_environment'
 import { FirebaseFunctionsRateLimiter } from './FirebaseFunctionsRateLimiter'
 import { mock } from './FirebaseFunctionsRateLimiter.mock.integration.test'
 import { delayMs } from './utils.test'
 
 describe('FirebaseFunctionsRateLimiter', () => {
   //
-  before('startup', async function () {
-    this.timeout(4000)
+  beforeAll(async () => {
     const { firestore, database } = mock('firestore', {})
     await firestore
       .collection('a')
@@ -34,7 +33,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
     {
       name: 'with qualifier',
       qualifierFactory() {
-        return `q${uuid()}`
+        return `q${randomUUID()}`
       },
     },
     {
@@ -60,12 +59,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
               )
 
               const record = doc as PersistenceRecord
-              expect(record.u)
-                .to
-                .be
-                .an('array')
-                .with
-                .length(1)
+              expect(record.u).toHaveLength(1)
             })
 
             it('Increments counter when limit is not exceeded', async () => {
@@ -86,12 +80,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
               )
 
               const record = doc as PersistenceRecord
-              expect(record.u)
-                .to
-                .be
-                .an('array')
-                .with
-                .length(noOfTestCalls)
+              expect(record.u).toHaveLength(noOfTestCalls)
             })
 
             it('Does not increment counter when limit is exceeded', async () => {
@@ -114,17 +103,10 @@ describe('FirebaseFunctionsRateLimiter', () => {
               )
 
               const record = doc as PersistenceRecord
-              expect(record.u)
-                .to
-                .be
-                .an('array')
-                .with
-                .length(maxCalls)
+              expect(record.u).toHaveLength(maxCalls)
             })
 
-            it('Calls older than period are removed from the database', async function () {
-              this.timeout(3000)
-
+            it('Calls older than period are removed from the database', async () => {
               const maxCalls = 2
               const periodSeconds = 1
 
@@ -144,12 +126,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 qualifier || FirebaseFunctionsRateLimiter.DEFAULT_QUALIFIER,
               )
               const record = doc as PersistenceRecord
-              expect(record.u)
-                .to
-                .be
-                .an('array')
-                .with
-                .length(1)
+              expect(record.u).toHaveLength(1)
             })
           })
 
@@ -168,9 +145,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 await rateLimiter.isQuotaExceededOrRecordUsage(qualifier)
               }
 
-              await expect(
-                rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier),
-              ).to.eventually.be.rejectedWith(functions.https.HttpsError)
+              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)).rejects.toBeInstanceOf(functions.https.HttpsError)
             })
 
             it('Is fulfilled when limit is not exceeded', async () => {
@@ -187,7 +162,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 await rateLimiter.isQuotaExceededOrRecordUsage(qualifier)
               }
 
-              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)).to.eventually.be.fulfilled
+              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)).resolves.toBeUndefined()
             })
 
             it('When error factory is provided, uses it to throw the error', async () => {
@@ -198,9 +173,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
               await rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)
 
               const errorFactory = () => new Error('error-from-factory')
-              await expect(
-                rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier, errorFactory),
-              ).to.eventually.be.rejectedWith(/error-from-factory/)
+              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier, errorFactory)).rejects.toThrow(/error-from-factory/)
             })
 
             it('Provides valid configuration to error factory', async () => {
@@ -211,13 +184,11 @@ describe('FirebaseFunctionsRateLimiter', () => {
               await rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)
 
               const errorFactory = (configInErrorFactory: FirebaseFunctionsRateLimiterConfiguration) => {
-                expect(configInErrorFactory).to.deep.include(config)
+                expect(configInErrorFactory).toEqual(expect.objectContaining(config))
                 return new Error('error-from-factory')
               }
 
-              await expect(
-                rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier, errorFactory),
-              ).to.eventually.be.rejectedWith(/error-from-factory/)
+              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier, errorFactory)).rejects.toThrow(/error-from-factory/)
             })
           });
 
@@ -251,12 +222,10 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 }
 
                 const method = testedMethod.methodFactory(rateLimiter)
-                expect(await method(qualifier)).to.be.equal(true)
+                expect(await method(qualifier)).toBe(true)
               })
 
-              it('Limit is not exceeded if too much calls not in specified period', async function () {
-                this.timeout(3000)
-
+              it('Limit is not exceeded if too much calls not in specified period', async () => {
                 const maxCalls = 2
                 const periodSeconds = 1
 
@@ -270,7 +239,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 await delayMs(periodSeconds * 1000 + 200)
 
                 const method = testedMethod.methodFactory(rateLimiter)
-                expect(await method(qualifier)).to.be.equal(false)
+                expect(await method(qualifier)).toBe(false)
               })
             }),
           )
@@ -283,7 +252,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
           await rateLimiter.isQuotaExceededOrRecordUsage()
 
           const collection = await firestore.collection(uniqueCollectionName).get()
-          expect(collection.size).to.be.equal(1)
+          expect(collection.size).toBe(1)
         })
       })
 
@@ -293,14 +262,14 @@ describe('FirebaseFunctionsRateLimiter', () => {
           await rateLimiter.isQuotaExceededOrRecordUsage()
 
           const collection = (await database.ref(`${uniqueCollectionName}`).once('value')).val()
-          expect(_.keys(collection).length).to.be.equal(1)
+          expect(Object.keys(collection)).toHaveLength(1)
         })
       })
 
       describe('getConfiguration', () => {
         it('Returns correct configuration', () => {
           const { rateLimiter, config } = mock('firestore', { maxCalls: 5 })
-          expect(rateLimiter.getConfiguration()).to.deep.include(config)
+          expect(rateLimiter.getConfiguration()).toEqual(expect.objectContaining(config))
         })
       })
     }),
