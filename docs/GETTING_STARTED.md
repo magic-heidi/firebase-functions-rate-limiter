@@ -11,17 +11,17 @@ The package uses modular Firebase Admin SDK entry points. The limiter works with
 ## Installation
 
 ```bash
-npm install firebase-functions-rate-limiter firebase-admin firebase-functions
+npm install @magic-heidi/firebase-functions-rate-limiter firebase-admin firebase-functions
 ```
 
 The package provides ESM and CommonJS exports:
 
 ```ts
-import { FirebaseFunctionsRateLimiter } from 'firebase-functions-rate-limiter'
+import { FirebaseFunctionsRateLimiter } from '@magic-heidi/firebase-functions-rate-limiter'
 ```
 
 ```js
-const { FirebaseFunctionsRateLimiter } = require('firebase-functions-rate-limiter')
+const { FirebaseFunctionsRateLimiter } = require('@magic-heidi/firebase-functions-rate-limiter')
 ```
 
 Use one module style per application. Initialize the Admin SDK once at module scope:
@@ -145,4 +145,3 @@ Configure Firebase security rules, credentials, and deployment settings accordin
 - Keep the persistence backend near the functions’ region when possible.
 - Decide whether backend failures should fail closed or fail open for your application.
 - Keep the check-and-record method as one operation; splitting it into separate checks and writes introduces a race between concurrent invocations.
-

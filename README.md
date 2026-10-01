@@ -1,6 +1,6 @@
 # Firebase Functions Rate Limiter
 
-[![npm](https://img.shields.io/npm/v/firebase-functions-rate-limiter.svg?style=flat-square)](https://www.npmjs.com/package/firebase-functions-rate-limiter)
+[![npm](https://img.shields.io/npm/v/%40magic-heidi%2Ffirebase-functions-rate-limiter.svg?style=flat-square)](https://www.npmjs.com/package/@magic-heidi/firebase-functions-rate-limiter)
 [![Code coverage](https://img.shields.io/codecov/c/gh/magic-heidi/firebase-functions-rate-limiter?style=flat-square)](https://codecov.io/gh/magic-heidi/firebase-functions-rate-limiter)
 [![License](https://img.shields.io/github/license/magic-heidi/firebase-functions-rate-limiter.svg?style=flat-square)](https://github.com/magic-heidi/firebase-functions-rate-limiter/blob/main/LICENSE)
 
@@ -11,7 +11,7 @@ Rate-limit Firebase Cloud Functions by user, resource, or any other qualifier. U
 Install the package and Firebase SDKs if they are not already present in your Functions project:
 
 ```bash
-npm install firebase-functions-rate-limiter firebase-admin firebase-functions
+npm install @magic-heidi/firebase-functions-rate-limiter firebase-admin firebase-functions
 ```
 
 Create one limiter at module scope and call it from your function:
@@ -19,7 +19,7 @@ Create one limiter at module scope and call it from your function:
 ```ts
 import { initializeApp } from 'firebase-admin/app'
 import { getDatabase } from 'firebase-admin/database'
-import { FirebaseFunctionsRateLimiter } from 'firebase-functions-rate-limiter'
+import { FirebaseFunctionsRateLimiter } from '@magic-heidi/firebase-functions-rate-limiter'
 import { onRequest } from 'firebase-functions/v1/https'
 
 initializeApp()

@@ -5,7 +5,7 @@
 ## Import
 
 ```ts
-import { FirebaseFunctionsRateLimiter } from 'firebase-functions-rate-limiter'
+import { FirebaseFunctionsRateLimiter } from '@magic-heidi/firebase-functions-rate-limiter'
 ```
 
 The package also provides a default export and CommonJS exports.

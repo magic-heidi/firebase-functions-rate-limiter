@@ -1,5 +1,5 @@
 {
-  "name": "firebase-functions-rate-limiter",
+  "name": "@magic-heidi/firebase-functions-rate-limiter",
   "type": "module",
   "version": "0.0.1",
   "packageManager": "pnpm@12.8.2",
@@ -10,6 +10,9 @@
     "Fahadul Islam (https://github.com/magic-heidi)"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/magic-heidi/firebase-functions-rate-limiter"
