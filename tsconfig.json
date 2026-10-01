@@ -5,7 +5,6 @@
         "strict": true,
         "declaration": true,
         "moduleResolution": "node",
-        "allowSyntheticDefaultImports": false,
         "noImplicitAny": true,
         "allowJs": false,
         "skipLibCheck": true,
