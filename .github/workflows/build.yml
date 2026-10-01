@@ -1,0 +1,63 @@
+name: Build package branch
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-branch
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and publish build branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Prepare package snapshot
+        shell: bash
+        run: |
+          rm -rf build
+          mkdir build
+          cp package.json LICENSE build/
+          cp -R dist build/
+
+          node - build/package.json <<'NODE'
+          const fs = require('node:fs')
+
+          const packagePath = process.argv[2]
+          const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
+
+          // The build branch contains no source files, so it must not try to
+          // rebuild itself when installed as a Git dependency.
+          delete packageJson.scripts?.prepare
+
+          fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`)
+          NODE
+
+      - name: Publish build branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: build
+          publish_dir: ${{ github.workspace }}/build
+          force_orphan: true
+          commit_message: Build ${{ github.sha }}
