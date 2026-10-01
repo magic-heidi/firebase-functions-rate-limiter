@@ -2,22 +2,19 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "rootDir": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["vitest/globals"],
     "strict": true,
-    "declaration": true,
-    "outDir": "dist",
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/**/*.test.ts"
   ]
 }

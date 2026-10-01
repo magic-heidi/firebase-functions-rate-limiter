@@ -37,8 +37,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",
   "files": [
-    "/dist",
-    "package-lock.js"
+    "/dist"
   ],
   "engines": {
     "node": ">=22"
@@ -55,7 +54,6 @@
     "test:coverage": "vitest run -p unit --coverage",
     "test:coverage:lcov": "vitest run -p unit --coverage --coverage.reporter=lcov",
     "check": "pnpm build && pnpm test && pnpm test:emulator",
-    "upload-coverage": "codecov",
     "semantic-release": "semantic-release"
   },
   "peerDependencies": {
@@ -70,7 +68,6 @@
     "@firebase/testing": "^0.20.11",
     "@types/node": "^22.13.10",
     "@vitest/coverage-v8": "^5.0.2",
-    "codecov": "^3.8.3",
     "es-toolkit": "^1.39.3",
     "eslint": "^10.11.0",
     "firebase-admin": "^13.0.0",
