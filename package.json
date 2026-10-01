@@ -6,7 +6,8 @@
   "description": "JS/TS library that allows you to set per - time, per - user or per - anything limits for calling Firebase cloud functions",
   "author": "Jędrzej Lewandowski <jedrzejblew@gmail.com> (https://jedrzej.lewandowski.doctor/)",
   "contributors": [
-    "Jędrzej Lewandowski <jedrzejblew@gmail.com> (https://jedrzej.lewandowski.doctor/)"
+    "Omgovich (https://github.com/omgovich)",
+    "Fahadul Islam (https://github.com/magic-heidi)"
   ],
   "license": "MIT",
   "repository": {
