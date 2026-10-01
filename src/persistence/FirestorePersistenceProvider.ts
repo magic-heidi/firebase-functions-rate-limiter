@@ -1,10 +1,8 @@
 import type * as admin from 'firebase-admin'
 import type { FirestoreEquivalent } from '../types/FirestoreEquivalent'
-
 import type { PersistenceProvider } from './PersistenceProvider'
-
-import ow from 'ow'
-import { PersistenceRecord } from './PersistenceRecord'
+import type { PersistenceRecord } from './PersistenceRecord'
+import { PersistenceRecordSchema } from './PersistenceRecord'
 
 export class FirestorePersistenceProvider implements PersistenceProvider {
   private firestore: admin.firestore.Firestore | FirestoreEquivalent
@@ -18,7 +16,6 @@ export class FirestorePersistenceProvider implements PersistenceProvider {
     },
   ) {
     this.firestore = firestore
-    ow(this.firestore, 'firestore', ow.object)
 
     this.debugFn = debugFn
   }
@@ -62,9 +59,7 @@ export class FirestorePersistenceProvider implements PersistenceProvider {
 
     if (!docSnapshot.exists) return this.createEmptyRecord()
 
-    const record: PersistenceRecord = docSnapshot.data() as PersistenceRecord
-    PersistenceRecord.validate(record)
-    return record
+    return PersistenceRecordSchema.parse(docSnapshot.data())
   }
 
   private async saveRecord(collectionName: string, recordName: string, record: PersistenceRecord): Promise<void> {

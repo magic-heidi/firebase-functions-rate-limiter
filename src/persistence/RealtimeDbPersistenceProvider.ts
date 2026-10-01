@@ -3,7 +3,6 @@ import type { RealtimeDbEquivalent } from '../types/RealtimeDbEquivalent'
 import type { PersistenceProvider } from './PersistenceProvider'
 
 import type { PersistenceRecord } from './PersistenceRecord'
-import ow from 'ow'
 
 export class RealtimeDbPersistenceProvider implements PersistenceProvider {
   private database: RealtimeDbEquivalent
@@ -18,7 +17,6 @@ export class RealtimeDbPersistenceProvider implements PersistenceProvider {
     },
   ) {
     this.database = database
-    ow(this.database, 'database', ow.object)
 
     this.debugFn = debugFn
   }

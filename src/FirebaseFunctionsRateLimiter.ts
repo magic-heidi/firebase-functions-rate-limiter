@@ -2,12 +2,10 @@
 import type * as admin from 'firebase-admin'
 import type { PersistenceProvider } from './persistence/PersistenceProvider'
 import type { FirestoreEquivalent } from './types/FirestoreEquivalent'
-
 import type { RealtimeDbEquivalent } from './types/RealtimeDbEquivalent'
 import * as functions from 'firebase-functions'
-import ow from 'ow'
-import { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
 import { GenericRateLimiter } from './GenericRateLimiter'
+import { LimiterConfig } from './LimiterConfig'
 import { FirestorePersistenceProvider } from './persistence/FirestorePersistenceProvider'
 import { PersistenceProviderMock } from './persistence/PersistenceProviderMock'
 import { RealtimeDbPersistenceProvider } from './persistence/RealtimeDbPersistenceProvider'
@@ -20,7 +18,7 @@ export class FirebaseFunctionsRateLimiter {
      * Factories
      */
   public static withFirestoreBackend(
-    configuration: FirebaseFunctionsRateLimiterConfiguration,
+    configuration: LimiterConfig.Input,
     firestore: admin.firestore.Firestore | FirestoreEquivalent,
   ): FirebaseFunctionsRateLimiter {
     const provider = new FirestorePersistenceProvider(firestore)
@@ -28,7 +26,7 @@ export class FirebaseFunctionsRateLimiter {
   }
 
   public static withRealtimeDbBackend(
-    configuration: FirebaseFunctionsRateLimiterConfiguration,
+    configuration: LimiterConfig.Input,
     realtimeDb: admin.database.Database | RealtimeDbEquivalent,
   ): FirebaseFunctionsRateLimiter {
     const provider = new RealtimeDbPersistenceProvider(realtimeDb)
@@ -36,10 +34,10 @@ export class FirebaseFunctionsRateLimiter {
   }
 
   public static mock(
-    configuration?: FirebaseFunctionsRateLimiterConfiguration,
+    configuration?: LimiterConfig.Input,
     persistenceProviderMock?: PersistenceProviderMock,
   ): FirebaseFunctionsRateLimiter {
-    const defaultConfig: FirebaseFunctionsRateLimiterConfiguration = {
+    const defaultConfig: LimiterConfig.Input = {
       periodSeconds: 10,
       maxCalls: Number.MAX_SAFE_INTEGER,
     }
@@ -53,20 +51,15 @@ export class FirebaseFunctionsRateLimiter {
      *  Implementation
      */
 
-  private configurationFull: FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull
+  private configurationFull: LimiterConfig.Schema
   private genericRateLimiter: GenericRateLimiter
   private debugFn: (msg: string) => void
 
   private constructor(
-    configuration: FirebaseFunctionsRateLimiterConfiguration,
+    configuration: LimiterConfig.Input,
     persistenceProvider: PersistenceProvider,
   ) {
-    this.configurationFull = {
-      ...FirebaseFunctionsRateLimiterConfiguration.DEFAULT_CONFIGURATION,
-      ...configuration,
-    }
-    ow(this.configurationFull, 'configuration', ow.object)
-    FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull.validate(this.configurationFull)
+    this.configurationFull = LimiterConfig.Schema.parse({ ...LimiterConfig.Defaults, ...configuration })
 
     this.debugFn = this.constructDebugFn(this.configurationFull)
     persistenceProvider.setDebugFn(this.debugFn)
@@ -130,7 +123,7 @@ export class FirebaseFunctionsRateLimiter {
    */
   public async rejectOnQuotaExceededOrRecordUsage(
     qualifier?: string,
-    errorFactory?: (config: FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull) => Error,
+    errorFactory?: (config: LimiterConfig.Schema) => Error,
   ): Promise<void> {
     const isExceeded = await this.genericRateLimiter.isQuotaExceededOrRecordCall(
       qualifier || FirebaseFunctionsRateLimiter.DEFAULT_QUALIFIER,
@@ -155,7 +148,7 @@ export class FirebaseFunctionsRateLimiter {
   /**
    * Returns this rate limiter configuration
    */
-  public getConfiguration(): FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull {
+  public getConfiguration(): LimiterConfig.Schema {
     return this.configurationFull
   }
 
@@ -172,7 +165,7 @@ export class FirebaseFunctionsRateLimiter {
   }
 
   private constructDebugFn(
-    config: FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull,
+    config: LimiterConfig.Schema,
   ): (msg: string) => void {
     /* c8 ignore if */
     if (config.debug) {

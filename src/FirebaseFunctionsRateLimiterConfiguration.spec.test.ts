@@ -1,10 +1,8 @@
 /* tslint:disable:max-classes-per-file */
-import { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
+import { LimiterConfig } from './LimiterConfig'
 
-describe('FirebaseFunctionsRateLimiterConfiguration', () => {
+describe('LimiterConfig', () => {
   it('Default configuration passes validation', async () => {
-    FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull.validate(
-      FirebaseFunctionsRateLimiterConfiguration.DEFAULT_CONFIGURATION,
-    )
+    expect(() => LimiterConfig.Schema.parse(LimiterConfig.Defaults)).not.toThrow()
   })
 })

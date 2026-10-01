@@ -2,32 +2,26 @@ import type { PersistenceProvider } from './persistence/PersistenceProvider'
 
 import type { PersistenceRecord } from './persistence/PersistenceRecord'
 import type { TimestampProvider } from './timestamp/TimestampProvider'
-import ow from 'ow'
-import { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
+import { LimiterConfig } from './LimiterConfig'
 
 export class GenericRateLimiter {
-  private configuration: FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull
+  private configuration: LimiterConfig.Schema
   private persistenceProvider: PersistenceProvider
   private timestampProvider: TimestampProvider
   private debugFn: (msg: string) => void
 
   public constructor(
-    configuration: FirebaseFunctionsRateLimiterConfiguration,
+    configuration: LimiterConfig.Input,
     persistenceProvider: PersistenceProvider,
     timestampProvider: TimestampProvider,
     debugFn: (msg: string) => void = (msg: string) => {
       /* */
     },
   ) {
-    this.configuration = { ...FirebaseFunctionsRateLimiterConfiguration.DEFAULT_CONFIGURATION, ...configuration }
-    ow(this.configuration, 'configuration', ow.object)
-    FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull.validate(this.configuration)
+    this.configuration = LimiterConfig.Schema.parse({ ...LimiterConfig.Defaults, ...configuration })
 
     this.persistenceProvider = persistenceProvider
-    ow(this.persistenceProvider, 'persistenceProvider', ow.object)
-
     this.timestampProvider = timestampProvider
-    ow(this.timestampProvider, 'timestampProvider', ow.object)
 
     this.debugFn = debugFn
   }

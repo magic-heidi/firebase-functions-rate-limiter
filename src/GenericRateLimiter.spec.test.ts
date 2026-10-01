@@ -1,12 +1,12 @@
 /* tslint:disable:max-classes-per-file */
 
-import type { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
+import type { LimiterConfig } from './LimiterConfig'
 import { random } from 'es-toolkit'
 import { GenericRateLimiter } from './GenericRateLimiter'
 import { PersistenceProviderMock } from './persistence/PersistenceProviderMock'
 import { TimestampProviderMock } from './timestamp/TimestampProviderMock.test'
 
-const sampleConfiguration: FirebaseFunctionsRateLimiterConfiguration.ConfigurationFull = {
+const sampleConfiguration: LimiterConfig.Schema = {
   name: 'rate_limiter_1',
   periodSeconds: 5 * 60,
   maxCalls: 1,

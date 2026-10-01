@@ -1,4 +1,4 @@
-import type { FirebaseFunctionsRateLimiterConfiguration } from './FirebaseFunctionsRateLimiterConfiguration'
+import type { LimiterConfig } from './LimiterConfig'
 import type { PersistenceRecord } from './persistence/PersistenceRecord'
 
 /* tslint:disable:max-classes-per-file no-console */
@@ -183,7 +183,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
               const qualifier = test.qualifierFactory()
               await rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)
 
-              const errorFactory = (configInErrorFactory: FirebaseFunctionsRateLimiterConfiguration) => {
+              const errorFactory = (configInErrorFactory: LimiterConfig.Schema) => {
                 expect(configInErrorFactory).toEqual(expect.objectContaining(config))
                 return new Error('error-from-factory')
               }
