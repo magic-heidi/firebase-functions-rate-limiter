@@ -1,9 +1,10 @@
 // tslint:disable no-console
-import type * as admin from 'firebase-admin'
+import type { Database } from 'firebase-admin/database'
+import type { Firestore } from 'firebase-admin/firestore'
 import type { PersistenceProvider } from './persistence/PersistenceProvider'
 import type { FirestoreEquivalent } from './types/FirestoreEquivalent'
 import type { RealtimeDbEquivalent } from './types/RealtimeDbEquivalent'
-import * as functions from 'firebase-functions'
+import { HttpsError } from 'firebase-functions/https'
 import { GenericRateLimiter } from './GenericRateLimiter'
 import { LimiterConfig } from './LimiterConfig'
 import { FirestorePersistenceProvider } from './persistence/FirestorePersistenceProvider'
@@ -19,7 +20,7 @@ export class FirebaseFunctionsRateLimiter {
      */
   public static withFirestoreBackend(
     configuration: LimiterConfig.Input,
-    firestore: admin.firestore.Firestore | FirestoreEquivalent,
+    firestore: Firestore | FirestoreEquivalent,
   ): FirebaseFunctionsRateLimiter {
     const provider = new FirestorePersistenceProvider(firestore)
     return new FirebaseFunctionsRateLimiter(configuration, provider)
@@ -27,7 +28,7 @@ export class FirebaseFunctionsRateLimiter {
 
   public static withRealtimeDbBackend(
     configuration: LimiterConfig.Input,
-    realtimeDb: admin.database.Database | RealtimeDbEquivalent,
+    realtimeDb: Database | RealtimeDbEquivalent,
   ): FirebaseFunctionsRateLimiter {
     const provider = new RealtimeDbPersistenceProvider(realtimeDb)
     return new FirebaseFunctionsRateLimiter(configuration, provider)
@@ -155,13 +156,13 @@ export class FirebaseFunctionsRateLimiter {
   /*
      * Private methods
      */
-  private constructRejectionError(qualifier?: string): functions.https.HttpsError {
+  private constructRejectionError(qualifier?: string): HttpsError {
     const c = this.configurationFull
     const msg
       = `FirebaseFunctionsRateLimiter error: Limit of ${c.maxCalls} calls per `
         + `${c.periodSeconds} seconds exceeded for ${qualifier ? 'specified qualifier in ' : ''}`
         + `limiter ${c.name}`
-    return new functions.https.HttpsError('resource-exhausted', msg)
+    return new HttpsError('resource-exhausted', msg)
   }
 
   private constructDebugFn(

@@ -4,7 +4,7 @@ import type { PersistenceRecord } from './persistence/PersistenceRecord'
 /* tslint:disable:max-classes-per-file no-console */
 import { randomUUID } from 'node:crypto'
 import * as firebase from '@firebase/testing'
-import * as functions from 'firebase-functions'
+import { HttpsError } from 'firebase-functions/https'
 import { FirebaseFunctionsRateLimiter } from './FirebaseFunctionsRateLimiter'
 import { mock } from './FirebaseFunctionsRateLimiter.mock.integration.test'
 import { delayMs } from './utils.test'
@@ -145,7 +145,7 @@ describe('FirebaseFunctionsRateLimiter', () => {
                 await rateLimiter.isQuotaExceededOrRecordUsage(qualifier)
               }
 
-              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)).rejects.toBeInstanceOf(functions.https.HttpsError)
+              await expect(rateLimiter.rejectOnQuotaExceededOrRecordUsage(qualifier)).rejects.toBeInstanceOf(HttpsError)
             })
 
             it('Is fulfilled when limit is not exceeded', async () => {

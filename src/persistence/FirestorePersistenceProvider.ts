@@ -1,11 +1,11 @@
-import type * as admin from 'firebase-admin'
+import type { Firestore } from 'firebase-admin/firestore'
 import type { FirestoreEquivalent } from '../types/FirestoreEquivalent'
 import type { PersistenceProvider } from './PersistenceProvider'
 import type { PersistenceRecord } from './PersistenceRecord'
 import { PersistenceRecordSchema } from './PersistenceRecord'
 
 export class FirestorePersistenceProvider implements PersistenceProvider {
-  private firestore: admin.firestore.Firestore | FirestoreEquivalent
+  private firestore: Firestore | FirestoreEquivalent
   private debugFn: (msg: string) => void
 
   /* c8 ignore next (debugFn), because typescript injects if for default parameters */
